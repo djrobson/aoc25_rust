@@ -10,43 +10,14 @@ impl Position {
         Position{pos: 50, clicks: 0}
     }
     fn adjust(&mut self, amount: i32) {
-        if amount == 0 {
-            return;
-        }
+        let step = if amount > 0 { 1 } else { -1 };
+        let abs_amount = amount.abs();
 
-        let starting_at_zero = self.pos == 0;
-
-        if amount > 0 {
-            // Moving right: count how many times we pass through 0
-            // We pass 0 when we go from 99 to 0, but not if we land exactly on 0
-            let target = self.pos + amount;
-            let wraps = (target - 1) / 100;
-            self.clicks += wraps as u32;
-            self.pos = target % 100;
-        } else {
-            // Moving left: count how many times we pass through 0
-            // We pass 0 when we go from 0 to 99
-            let abs_amount = (-amount) as i32;
-            let mut clicks_to_add = if abs_amount > self.pos {
-                1 + (abs_amount - self.pos - 1) / 100
-            } else {
-                0
-            };
-            // If we start at 0, don't count leaving it as a click
-            if starting_at_zero && clicks_to_add > 0 {
-                clicks_to_add -= 1;
+        for _ in 0..abs_amount {
+            self.pos = (self.pos + step + 100) % 100;
+            if self.pos == 0 {
+                self.clicks += 1;
             }
-            self.clicks += clicks_to_add as u32;
-            // Handle negative modulo properly
-            self.pos = ((self.pos + amount) % 100 + 100) % 100;
-        }
-
-        // If we land on 0, count that as an additional click
-        // But if we started at 0 and also ended at 0, don't double count
-        if self.pos == 0 && !starting_at_zero {
-            self.clicks += 1;
-        } else {
-            //println!("started and ended at 0!");
         }
     }
 }
