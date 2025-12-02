@@ -10,10 +10,22 @@ impl Position {
         Position{pos: 50, clicks: 0}
     }
     fn adjust(&mut self, amount: i32) {
+        if amount == 0 {
+            return;
+        }
+
         let step = if amount > 0 { 1 } else { -1 };
         let abs_amount = amount.abs();
 
-        for _ in 0..abs_amount {
+        // Fast-forward through complete cycles of 100
+        if abs_amount >= 100 {
+            let full_cycles = abs_amount / 100;
+            self.clicks += full_cycles as u32;
+        }
+
+        // Simulate the remaining clicks
+        let remaining = abs_amount % 100;
+        for _ in 0..remaining {
             self.pos = (self.pos + step + 100) % 100;
             if self.pos == 0 {
                 self.clicks += 1;
