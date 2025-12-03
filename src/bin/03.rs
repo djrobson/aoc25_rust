@@ -19,20 +19,18 @@ pub fn part_one(input: &str) -> Option<u32> {
         // find the lowest index of largest value that isn't in the last position
         let mut index1 = 0;
         let mut val1 = 0;
-        for idx in 0..bank.len()-1 {
+        for (idx, val) in bank.iter().enumerate().take(bank.len()-1) {
             if bank[idx] > val1 {
                 index1 = idx;
-                val1 = bank[idx];
+                val1 = *val;
             }
         }
         
         // find the largest value who's index is greater than the first index
-        let mut index2 = 0;
         let mut val2 = 0;
-        for idx in index1+1..bank.len() {
-            if bank[idx] > val2 {
-                index2 = idx;
-                val2 = bank[idx];
+        for val in bank.iter().skip(index1+1) {
+            if *val > val2 {
+                val2 = *val;
             }
             
         }
@@ -42,13 +40,13 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(total)
 }
 
-fn get_largest_with_room(bank: &Vec<u32>, starting: usize, ending: usize) -> usize {
+fn get_largest_with_room(bank: &[u32], starting: usize, ending: usize) -> usize {
     let mut index = 0;
-    let mut val = 0;
-    for idx in starting..=bank.len()-ending {
-        if bank[idx] > val {
+    let mut value = 0;
+    for (idx, val) in bank.iter().enumerate().take((bank.len() - ending) + 1).skip(starting) {
+        if *val > value {
             index = idx;
-            val = bank[idx];
+            value = *val;
         }
     }
     index

@@ -59,7 +59,7 @@ fn find_part_one_in_range(bottom: u64, top: u64) -> u64 {
 fn generate_pattern(prefix: u64, prefix_decimal: u32, total_decimal: u32) -> u64 {
     let mut decimal_left = total_decimal - prefix_decimal;
     let mut result = 0;
-    if total_decimal % prefix_decimal != 0 {
+    if !total_decimal.is_multiple_of(prefix_decimal) {
         panic!("bad generator pattern");
     }
     loop {
@@ -82,7 +82,7 @@ pub fn count_decimal(num: &u64)->u32 {
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let ranges = parse_input(&input);
+    let ranges = parse_input(input);
     let total: u64 = 
         ranges.iter().map(|range|  {
             find_part_one_in_range(range.bottom, range.top)
