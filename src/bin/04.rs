@@ -14,19 +14,15 @@ fn get_available_rolls( grid: &[Vec<u8>]) -> Vec<(usize,usize)> {
                 line.iter().enumerate()
                     .for_each(|(x, val)| {
                         if val == &b'@' {
-                            let adjacent_rolls: u64 = adjacent_offsets.iter()
-                                .map(|(dy,dx)|{
+                            let adjacent_rolls = adjacent_offsets.iter()
+                                .filter(|(dy,dx)|{
                                     let this_y: i32 = dy+y as i32;
                                     let this_x = dx+x as i32;
-                                    if   this_y >= 0 && this_y < max_y 
+                                    this_y >= 0 && this_y < max_y 
                                     && this_x >= 0 && this_x < max_x 
                                     && grid[this_y as usize][this_x as usize] == b'@' 
-                                    {
-                                        1
-                                    } else {
-                                        0
-                                    }
-                                }).sum();
+                                })
+                                .count();
                             if adjacent_rolls < 4 {
                                 available_rolls.push((y,x));
                             };
