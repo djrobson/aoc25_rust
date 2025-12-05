@@ -1,6 +1,6 @@
 advent_of_code::solution!(5);
 use unbounded_interval_tree::interval_tree::IntervalTree;
-use std::ops::Bound::Included;
+use std::ops::Bound::{self, Included, Excluded};
 
 fn parse_input(input: &str) -> (IntervalTree<usize>, Vec<usize>) {
     let mut intervals = IntervalTree::default();
@@ -38,8 +38,21 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(fresh_ingredients)
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+    let (intervals, _) = parse_input(input);
+    let missing = intervals.get_interval_difference::<usize, (Bound<usize>, Bound<usize>)>(&(Included(usize::MIN), Included(usize::MAX)));
+    //println!("we don't cover {:?}", missing);
+
+    let mut included_count = usize::MAX;
+    for range in missing {
+        match range {
+            (Included(low), Excluded(high)) => {included_count -= (high-low) -1;}
+            (Excluded(low), Excluded(high)) => {included_count -= (high-low) -1;}
+            (Excluded(low), Included(high)) => {included_count -= high-low;}
+            _ => panic!("Unexpected range: {:?}", range)
+        }
+    }
+    Some(included_count)
 }
 
 #[cfg(test)]
@@ -55,6 +68,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(14));
     }
 }
