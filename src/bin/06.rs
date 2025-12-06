@@ -14,11 +14,11 @@ fn parse_input1(input: &str) -> Homework {
     let mut nums = Vec::new();
     let mut operators = Vec::new();
 
-    lines.for_each(|line| {
+    for line in lines {
         if line.as_bytes()[0] == b'*' || line.as_bytes()[0] == b'+' {
 
             line.split_whitespace().for_each(
-                |oper: &str| {
+                |oper| {
                     match oper {
                         "+" => operators.push(Operator::Add),
                         "*" => operators.push(Operator::Multiply),
@@ -26,16 +26,16 @@ fn parse_input1(input: &str) -> Homework {
                     }
                 });
         } else {
-            nums.push(line.split_whitespace().flat_map(|num: &str| num.parse()).collect());
+            nums.push(line.split_whitespace().flat_map(|num| num.parse()).collect());
         }
-    });
+    };
 
     Homework { nums, operators,}
 }
 
 
 fn parse_input2(input: &str) -> Homework {
-    let grid: Vec<&[u8]> = input.lines().map(|line: &str| line.as_bytes()).collect();
+    let grid: Vec<&[u8]> = input.lines().map(|line| line.as_bytes()).collect();
 
     let operator_row = grid.len()-1; // the operators are in the last row
 
