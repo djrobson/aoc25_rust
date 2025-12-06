@@ -10,7 +10,7 @@ struct Homework {
 }
 
 fn parse_input1(input: &str) -> Homework {
-    let mut lines = input.lines();
+    let lines = input.lines();
     let mut nums = Vec::new();
     let mut operators = Vec::new();
 
@@ -30,34 +30,49 @@ fn parse_input1(input: &str) -> Homework {
         }
     });
 
-    Homework {
-        nums: nums,
-        operators: operators,
-    }
+    Homework { nums, operators,}
 }
 
 
 fn parse_input2(input: &str) -> Homework {
-    let mut lines = input.lines();
+    let grid: Vec<&[u8]> = input.lines().map(|line: &str| line.as_bytes()).collect();
 
-    // iterate through the operator row, split all collumns just left of each operator, then do columnwise collection on the numbers
-    let nums1: Vec<u64> = lines.next().unwrap().split_whitespace().flat_map(|num: &str| num.parse()).collect();
-    let nums2: Vec<u64> = lines.next().unwrap().split_whitespace().flat_map(|num: &str| num.parse()).collect();
-    let nums3: Vec<u64> = lines.next().unwrap().split_whitespace().flat_map(|num: &str| num.parse()).collect();
-    let nums4: Vec<u64> = lines.next().unwrap().split_whitespace().flat_map(|num: &str| num.parse()).collect();
-    let operators: Vec<Operator> = lines.next().unwrap().split_whitespace().flat_map(
-        |oper: &str| {
-            match oper {
-                "+" => Some(Operator::Add),
-                "*" => Some(Operator::Multiply),
-                _ => None,
+    let operator_row = grid.len()-1; // the operators are in the last row
+
+    let mut col_starts: Vec<usize> = Vec::new();
+    let mut operators  = Vec::new();
+    let mut nums = Vec::new();
+
+    for col in 0..(grid[operator_row].len()-1) {
+        let this_op = grid[operator_row][col];
+        if this_op != b' ' {
+            col_starts.push(col);
+            match this_op {
+                b'+' => operators.push(Operator::Add),
+                b'*' => operators.push(Operator::Multiply),
+                _ => {}
             }
-        }).collect();
-
-    Homework {
-        nums: vec!(nums1, nums2, nums3, nums4),
-        operators: operators,
+        }
     }
+    let grid_last_column = grid[0].len();
+
+    for idx in 0..col_starts.len() {
+        let start_col = col_starts[idx];
+        let end_col = col_starts.get(idx+1).unwrap_or(&grid_last_column);
+        nums.insert(idx, Vec::new());
+        for col in start_col..*end_col {
+            let num_in_col: String = (0..operator_row)
+                .map(|row| grid[row][col] as char)
+                .filter(|c| !c.is_whitespace())
+                .collect();
+            //println!("found the number '{}' in col {}", num_in_col, col);
+            if !num_in_col.is_empty() {
+                nums[idx].push(num_in_col.parse().unwrap());
+            }
+        }
+    }
+
+    Homework {nums,operators,}
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
@@ -90,14 +105,14 @@ pub fn part_one(input: &str) -> Option<u64> {
 
 pub fn part_two(input: &str) -> Option<u64> {
     let homework = parse_input2(input);
-    let mut total = 0;
-    for col in 0..homework.nums[0].len() {
-        total += match homework.operators[col] {
-            Operator::Add => {homework.nums[0][col] + homework.nums[1][col] +homework.nums[2][col] +homework.nums[3][col]}
-            Operator::Multiply => {homework.nums[0][col] * homework.nums[1][col] *homework.nums[2][col] *homework.nums[3][col]}
-        }
-    }
-    Some(total)
+    Some(homework.operators.iter().enumerate()
+        .map(|(idx,oper)| {
+            match oper {
+                Operator::Add => homework.nums[idx].iter().sum::<u64>(),
+                Operator::Multiply => homework.nums[idx].iter().product::<u64>(),
+            }
+        }).sum()
+    )
 }
 
 #[cfg(test)]
