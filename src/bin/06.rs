@@ -77,30 +77,18 @@ fn parse_input2(input: &str) -> Homework {
 
 pub fn part_one(input: &str) -> Option<u64> {
     let homework = parse_input1(input);
-    let mut total = 0;
     let rows = homework.nums.len();
     let cols = homework.nums[0].len();
-    for col in 0..cols {
-        total += match homework.operators[col] {
-            Operator::Add => {
-                let mut col_total = 0;
-                for row in 0..rows {
-                    col_total += homework.nums[row][col];
-                }
-                //println!("col {} added to {}", col, col_total);
-                col_total
+
+    Some((0..cols)
+        .map(|col| {
+            match homework.operators[col] {
+                Operator::Add => (0..rows).map(|row| homework.nums[row][col]).sum::<u64>(),
+                Operator::Multiply => (0..rows).map(|row| homework.nums[row][col]).product::<u64>(),
             }
-            Operator::Multiply => {
-                let mut col_total = 1;
-                for row in 0..rows {
-                    col_total *= homework.nums[row][col];
-                }
-                //println!("col {} multiplied to {}", col, col_total);
-                col_total
-            }
-        }
-    }
-    Some(total)
+        })
+        .sum()
+    )
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
