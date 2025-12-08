@@ -7,7 +7,7 @@ struct Position {
 
 impl Position {
     fn new() -> Self {
-        Position{pos: 50, clicks: 0}
+        Position { pos: 50, clicks: 0 }
     }
     fn adjust(&mut self, amount: i32) {
         if amount == 0 {
@@ -69,7 +69,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 
         // println!("{} to\t{} with {} clicks", amount, pos.pos, pos.clicks);
     }
-    Some((pos.clicks)  as u64)
+    Some((pos.clicks) as u64)
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
 advent_of_code::solution!(5);
+use std::ops::Bound::{self, Excluded, Included};
 use unbounded_interval_tree::interval_tree::IntervalTree;
-use std::ops::Bound::{self, Included, Excluded};
 
 fn parse_input(input: &str) -> (IntervalTree<usize>, Vec<usize>) {
     let mut intervals = IntervalTree::default();
@@ -8,8 +8,8 @@ fn parse_input(input: &str) -> (IntervalTree<usize>, Vec<usize>) {
     let mut blank_line_encountered = false;
 
     for line in input.lines() {
-        
-        if line.trim().is_empty() { // Check if the line is empty (after trimming whitespace)
+        if line.trim().is_empty() {
+            // Check if the line is empty (after trimming whitespace)
             blank_line_encountered = true;
             continue; // Skip the blank line itself
         }
@@ -23,33 +23,45 @@ fn parse_input(input: &str) -> (IntervalTree<usize>, Vec<usize>) {
                 // The `parse()` method returns a Result, so `ok()` converts it to an Option.
                 let low = left_str.parse::<usize>().unwrap();
                 let high = right_str.parse::<usize>().unwrap();
-                    intervals.insert((Included(low), Included(high)));
+                intervals.insert((Included(low), Included(high)));
             } else {
                 panic!("unexpected input: {}", line);
             }
         }
     }
-    (intervals,ingredients)
+    (intervals, ingredients)
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
     let (intervals, ingredients) = parse_input(input);
-    let fresh_ingredients = ingredients.iter().filter(|ingredient| intervals.contains_point(*ingredient)).count();
+    let fresh_ingredients = ingredients
+        .iter()
+        .filter(|ingredient| intervals.contains_point(*ingredient))
+        .count();
     Some(fresh_ingredients)
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
     let (intervals, _) = parse_input(input);
-    let missing = intervals.get_interval_difference::<usize, (Bound<usize>, Bound<usize>)>(&(Included(usize::MIN), Included(usize::MAX)));
+    let missing = intervals.get_interval_difference::<usize, (Bound<usize>, Bound<usize>)>(&(
+        Included(usize::MIN),
+        Included(usize::MAX),
+    ));
     //println!("we don't cover {:?}", missing);
 
     let mut included_count = usize::MAX;
     for range in missing {
         match range {
-            (Included(low), Excluded(high)) => {included_count -= (high-low) -1;}
-            (Excluded(low), Excluded(high)) => {included_count -= (high-low) -1;}
-            (Excluded(low), Included(high)) => {included_count -= high-low;}
-            _ => panic!("Unexpected range: {:?}", range)
+            (Included(low), Excluded(high)) => {
+                included_count -= (high - low) - 1;
+            }
+            (Excluded(low), Excluded(high)) => {
+                included_count -= (high - low) - 1;
+            }
+            (Excluded(low), Included(high)) => {
+                included_count -= high - low;
+            }
+            _ => panic!("Unexpected range: {:?}", range),
         }
     }
     Some(included_count)

@@ -16,34 +16,33 @@ fn parse_input1(input: &str) -> Homework {
 
     for line in lines {
         if line.as_bytes()[0] == b'*' || line.as_bytes()[0] == b'+' {
-
-            line.split_whitespace().for_each(
-                |oper| {
-                    match oper {
-                        "+" => operators.push(Operator::Add),
-                        "*" => operators.push(Operator::Multiply),
-                        _ => {},
-                    }
-                });
+            line.split_whitespace().for_each(|oper| match oper {
+                "+" => operators.push(Operator::Add),
+                "*" => operators.push(Operator::Multiply),
+                _ => {}
+            });
         } else {
-            nums.push(line.split_whitespace().flat_map(|num| num.parse()).collect());
+            nums.push(
+                line.split_whitespace()
+                    .flat_map(|num| num.parse())
+                    .collect(),
+            );
         }
-    };
+    }
 
-    Homework { nums, operators,}
+    Homework { nums, operators }
 }
-
 
 fn parse_input2(input: &str) -> Homework {
     let grid: Vec<&[u8]> = input.lines().map(|line| line.as_bytes()).collect();
 
-    let operator_row = grid.len()-1; // the operators are in the last row
+    let operator_row = grid.len() - 1; // the operators are in the last row
 
     let mut col_starts: Vec<usize> = Vec::new();
-    let mut operators  = Vec::new();
+    let mut operators = Vec::new();
     let mut nums = Vec::new();
 
-    for col in 0..(grid[operator_row].len()-1) {
+    for col in 0..(grid[operator_row].len() - 1) {
         let this_op = grid[operator_row][col];
         if this_op != b' ' {
             col_starts.push(col);
@@ -58,7 +57,7 @@ fn parse_input2(input: &str) -> Homework {
 
     for idx in 0..col_starts.len() {
         let start_col = col_starts[idx];
-        let end_col = col_starts.get(idx+1).unwrap_or(&grid_last_column);
+        let end_col = col_starts.get(idx + 1).unwrap_or(&grid_last_column);
         nums.insert(idx, Vec::new());
         for col in start_col..*end_col {
             let num_in_col: String = (0..operator_row)
@@ -72,7 +71,7 @@ fn parse_input2(input: &str) -> Homework {
         }
     }
 
-    Homework {nums,operators,}
+    Homework { nums, operators }
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
@@ -80,26 +79,30 @@ pub fn part_one(input: &str) -> Option<u64> {
     let rows = homework.nums.len();
     let cols = homework.nums[0].len();
 
-    Some((0..cols)
-        .map(|col| {
-            match homework.operators[col] {
+    Some(
+        (0..cols)
+            .map(|col| match homework.operators[col] {
                 Operator::Add => (0..rows).map(|row| homework.nums[row][col]).sum::<u64>(),
-                Operator::Multiply => (0..rows).map(|row| homework.nums[row][col]).product::<u64>(),
-            }
-        })
-        .sum()
+                Operator::Multiply => (0..rows)
+                    .map(|row| homework.nums[row][col])
+                    .product::<u64>(),
+            })
+            .sum(),
     )
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let homework = parse_input2(input);
-    Some(homework.operators.iter().enumerate()
-        .map(|(idx,oper)| {
-            match oper {
+    Some(
+        homework
+            .operators
+            .iter()
+            .enumerate()
+            .map(|(idx, oper)| match oper {
                 Operator::Add => homework.nums[idx].iter().sum::<u64>(),
                 Operator::Multiply => homework.nums[idx].iter().product::<u64>(),
-            }
-        }).sum()
+            })
+            .sum(),
     )
 }
 

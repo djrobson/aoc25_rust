@@ -22,26 +22,26 @@ fn parse_input(input: &str) -> Vec<Range> {
 fn find_part_one_in_range(bottom: u64, top: u64) -> u64 {
     let mut this_sum: u64 = 0;
     let bot_decimal = count_decimal(&bottom);
-    let top_decimal = count_decimal( &top);
+    let top_decimal = count_decimal(&top);
     let bot_odd: bool = bot_decimal & 1 == 1;
     let top_odd: bool = top_decimal & 1 == 1;
     let mut my_bot = bottom;
-    let mut my_top= top;
-    //println!("{}-{} has {},{} decimal places and a range of {}", range.bottom, range.top, 
+    let mut my_top = top;
+    //println!("{}-{} has {},{} decimal places and a range of {}", range.bottom, range.top,
     //    bot_decimal, top_decimap, range_size);
     // if top and bot decimal are odd then we're done
     if top_odd && bot_odd {
         return 0;
-    } else  if bot_odd {
+    } else if bot_odd {
         // if bot decimal is odd and top is even, then increase bot to the lowest even decimal and continue
-        my_bot = 10_u64.pow(top_decimal-1);
+        my_bot = 10_u64.pow(top_decimal - 1);
     } else if top_odd {
         // if top decimal is odd, then decrease top decimal to just below that decimal level and continue
-        my_top = 10_u64.pow(top_decimal-1) -1;
+        my_top = 10_u64.pow(top_decimal - 1) - 1;
     }
     // for each bot decimal, mask out the lowest half of the number, double it and see if that's smaller top
-    let decimal_shift = 10_u64.pow(top_decimal/2);
-    let mut this_bot : u64 = my_bot / decimal_shift;
+    let decimal_shift = 10_u64.pow(top_decimal / 2);
+    let mut this_bot: u64 = my_bot / decimal_shift;
     let mut possible_num = this_bot * decimal_shift + this_bot;
     if possible_num < my_bot {
         // truncating could have made us below the minimum, try moving up
@@ -71,7 +71,7 @@ fn generate_pattern(prefix: u64, prefix_decimal: u32, total_decimal: u32) -> u64
     }
     result
 }
-pub fn count_decimal(num: &u64)->u32 {
+pub fn count_decimal(num: &u64) -> u32 {
     let mut result = 1;
     let mut num_copy: u64 = *num;
     while num_copy >= 10 {
@@ -83,10 +83,10 @@ pub fn count_decimal(num: &u64)->u32 {
 
 pub fn part_one(input: &str) -> Option<u64> {
     let ranges = parse_input(input);
-    let total: u64 = 
-        ranges.iter().map(|range|  {
-            find_part_one_in_range(range.bottom, range.top)
-        }).sum();
+    let total: u64 = ranges
+        .iter()
+        .map(|range| find_part_one_in_range(range.bottom, range.top))
+        .sum();
     Some(total)
 }
 
@@ -129,7 +129,9 @@ pub fn part_two(input: &str) -> Option<u64> {
 
                 // Generate all patterns in this decimal range
                 while my_pattern <= my_top {
-                    if count_decimal(&bot_pattern) == pattern_size && !seen_patterns.contains(&my_pattern) {
+                    if count_decimal(&bot_pattern) == pattern_size
+                        && !seen_patterns.contains(&my_pattern)
+                    {
                         seen_patterns.insert(my_pattern);
                         total += my_pattern;
                     }
@@ -154,10 +156,14 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    #[case(9,1,2,99)]
+    #[case(9, 1, 2, 99)]
     #[case(11885, 5, 10, 1188511885)]
-    fn test_part_two_pattern_generator(#[case] prefix: u64, #[case] prefix_decimal: u32, 
-        #[case] total_decimal: u32, #[case] expected: u64) {
+    fn test_part_two_pattern_generator(
+        #[case] prefix: u64,
+        #[case] prefix_decimal: u32,
+        #[case] total_decimal: u32,
+        #[case] expected: u64,
+    ) {
         let result = generate_pattern(prefix, prefix_decimal, total_decimal);
         assert_eq!(result, expected);
     }
@@ -214,7 +220,7 @@ mod tests {
     #[case("1698522-1698528", 0)]
     #[case("446443-446449", 446446)]
     #[case("38593856-38593862", 38593859)]
-    #[case("565653-565659",  0)]
+    #[case("565653-565659", 0)]
     #[case("824824821-824824827", 0)]
     #[case("2121212118-2121212124", 0)]
     fn test_part_one_example(#[case] input: &str, #[case] expected: u64) {
@@ -233,8 +239,7 @@ mod tests {
     #[case("49-70", 121)]
     #[case("6438484-6636872", 0)]
     #[case("2-20", 11)]
-    #[case("6666660113-6666682086", 6666666666
-)]
+    #[case("6666660113-6666682086", 6666666666)]
     fn test_part_one_inputs(#[case] input: &str, #[case] expected: u64) {
         let result = part_one(input);
         assert_eq!(result, Some(expected));
