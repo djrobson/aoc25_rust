@@ -112,7 +112,7 @@ fn part_one_impl(input: &str, max_connections: usize) -> Option<usize> {
         }
     }
 
-    seen_groups.sort_by(|a,b| b.len().cmp(&a.len()));
+    seen_groups.sort_by_key(|b| std::cmp::Reverse(b.len()));
     Some(seen_groups.iter().take(3).map(|group| group.len()).product())
 }
 
@@ -141,7 +141,7 @@ pub fn part_two(input: &str) -> Option<i64> {
     let mut unseen: HashSet<usize> = HashSet::from_iter(0..points.len());
     let mut seen_groups: Vec<HashSet<usize>> = Vec::new();
     let mut shortest_distances = distances.keys().sorted();
-    let mut connections_made = 0;
+    //let mut connections_made = 0;
     let mut pair: &(usize,usize) = &(0,0);
     while !( unseen.is_empty() && seen_groups[0].len() == points.len() ){
         let distance = shortest_distances.next().unwrap();
@@ -154,14 +154,14 @@ pub fn part_two(input: &str) -> Option<i64> {
             unseen.remove(&pair.0);
             unseen.remove(&pair.1);
             //println!("made new connection between {:?} and {:?} with distance {}", pair.0, pair.1, distance);
-            connections_made += 1;
+            //connections_made += 1;
         } else if unseen.contains(&pair.0) && !unseen.contains(&pair.1) {
             //println!("1 {:?} was already found, merge {:?} with it at distance {}", pair.0, pair.1, distance);
             for group in &mut seen_groups {
                 if group.contains(&pair.1) {
                     group.insert(pair.0);
                     unseen.remove(&pair.0);
-                    connections_made += 1;
+                    //connections_made += 1;
                     break;
                 }
             }
@@ -171,7 +171,7 @@ pub fn part_two(input: &str) -> Option<i64> {
                 if group.contains(&pair.0) {
                     group.insert(pair.1);
                     unseen.remove(&pair.1);
-                    connections_made += 1;
+                    //connections_made += 1;
                     break;
                 }
             }
@@ -199,12 +199,12 @@ pub fn part_two(input: &str) -> Option<i64> {
                 //println!("{:?} and {:?} were already found, merge group {} with {} with it at distance {}", 
                 //    pair.0, pair.1, group1, group2, distance);
                 seen_groups.remove(group2);
-                connections_made += 1;
+                //connections_made += 1;
             } else{
                 //println!("{:?} and {:?} were in the same group: {}-{} with distance {}", 
                 //   pair.0, pair.1, group1, group2, distance);
                 // we already saw this one
-                connections_made += 1;
+                //connections_made += 1;
             }
         }else {
             panic!("unaccounted pair {} {}", pair.0, pair.1);
