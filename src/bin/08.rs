@@ -30,15 +30,15 @@ fn part_one_impl(input: &str, max_connections: usize) -> Option<usize> {
             let distance = points[pt1_idx].distance_squared(points[pt2_idx]);
 
             if distances.contains_key(&distance) {
-                println!("found a tied distance {:?}->{:?} = {} = {:?}", 
-                    points[pt1_idx], points[pt2_idx], distance, distances.get(&distance).unwrap());
+                //println!("found a tied distance {:?}->{:?} = {} = {:?}", 
+                //    points[pt1_idx], points[pt2_idx], distance, distances.get(&distance).unwrap());
                 distances.insert(distance+1,(pt1_idx, pt2_idx));
             } else {
                 distances.insert(distance,(pt1_idx, pt2_idx));
             }
         }
     }
-    println!("calculated {} distances", distances.len());
+    //println!("calculated {} distances", distances.len());
     // we haven't seen any point indexes yet
     let mut unseen: HashSet<usize> = HashSet::from_iter(0..points.len());
     let mut seen_groups: Vec<HashSet<usize>> = Vec::new();
@@ -54,10 +54,10 @@ fn part_one_impl(input: &str, max_connections: usize) -> Option<usize> {
             seen_groups.push(new_circuit);
             unseen.remove(&pair.0);
             unseen.remove(&pair.1);
-            println!("made new connection between {:?} and {:?} with distance {}", pair.0, pair.1, distance);
+            //println!("made new connection between {:?} and {:?} with distance {}", pair.0, pair.1, distance);
             connections_made += 1;
         } else if unseen.contains(&pair.0) && !unseen.contains(&pair.1) {
-            println!("1 {:?} was already found, merge {:?} with it at distance {}", pair.0, pair.1, distance);
+            //println!("1 {:?} was already found, merge {:?} with it at distance {}", pair.0, pair.1, distance);
             for group in &mut seen_groups {
                 if group.contains(&pair.1) {
                     group.insert(pair.0);
@@ -67,7 +67,7 @@ fn part_one_impl(input: &str, max_connections: usize) -> Option<usize> {
                 }
             }
         } else if unseen.contains(&pair.1) && !unseen.contains(&pair.0)  {
-            println!("0 {:?} was already found, merge {:?} with it at distance {}", pair.1, pair.0, distance);
+            //println!("0 {:?} was already found, merge {:?} with it at distance {}", pair.1, pair.0, distance);
             for group in &mut seen_groups {
                 if group.contains(&pair.0) {
                     group.insert(pair.1);
@@ -97,22 +97,19 @@ fn part_one_impl(input: &str, max_connections: usize) -> Option<usize> {
                 let other_group = seen_groups.get(group2).unwrap().clone();
                 seen_groups.get_mut(group1).unwrap().extend(other_group);
                 
-                println!("{:?} and {:?} were already found, merge group {} with {} with it at distance {}", 
-                    pair.0, pair.1, group1, group2, distance);
+                //println!("{:?} and {:?} were already found, merge group {} with {} with it at distance {}", 
+                //    pair.0, pair.1, group1, group2, distance);
                 seen_groups.remove(group2);
                 connections_made += 1;
             } else{
-                println!("{:?} and {:?} were in the same group: {}-{} with distance {}", 
-                    pair.0, pair.1, group1, group2, distance);
+                //println!("{:?} and {:?} were in the same group: {}-{} with distance {}", 
+                //    pair.0, pair.1, group1, group2, distance);
                 // we already saw this one
                 connections_made += 1;
             }
         }else {
             panic!("unaccounted pair {} {}", pair.0, pair.1);
         }
-    }
-    for group in &seen_groups {
-        println!("group len is {}", group.len())
     }
 
     seen_groups.sort_by(|a,b| b.len().cmp(&a.len()));
@@ -131,15 +128,15 @@ pub fn part_two(input: &str) -> Option<i64> {
             let distance = points[pt1_idx].distance_squared(points[pt2_idx]);
 
             if distances.contains_key(&distance) {
-                println!("found a tied distance {:?}->{:?} = {} = {:?}", 
-                    points[pt1_idx], points[pt2_idx], distance, distances.get(&distance).unwrap());
+                //println!("found a tied distance {:?}->{:?} = {} = {:?}", 
+                //    points[pt1_idx], points[pt2_idx], distance, distances.get(&distance).unwrap());
                 distances.insert(distance+1,(pt1_idx, pt2_idx));
             } else {
                 distances.insert(distance,(pt1_idx, pt2_idx));
             }
         }
     }
-    println!("calculated {} distances", distances.len());
+    //println!("calculated {} distances", distances.len());
     // we haven't seen any point indexes yet
     let mut unseen: HashSet<usize> = HashSet::from_iter(0..points.len());
     let mut seen_groups: Vec<HashSet<usize>> = Vec::new();
@@ -156,10 +153,10 @@ pub fn part_two(input: &str) -> Option<i64> {
             seen_groups.push(new_circuit);
             unseen.remove(&pair.0);
             unseen.remove(&pair.1);
-            println!("made new connection between {:?} and {:?} with distance {}", pair.0, pair.1, distance);
+            //println!("made new connection between {:?} and {:?} with distance {}", pair.0, pair.1, distance);
             connections_made += 1;
         } else if unseen.contains(&pair.0) && !unseen.contains(&pair.1) {
-            println!("1 {:?} was already found, merge {:?} with it at distance {}", pair.0, pair.1, distance);
+            //println!("1 {:?} was already found, merge {:?} with it at distance {}", pair.0, pair.1, distance);
             for group in &mut seen_groups {
                 if group.contains(&pair.1) {
                     group.insert(pair.0);
@@ -169,7 +166,7 @@ pub fn part_two(input: &str) -> Option<i64> {
                 }
             }
         } else if unseen.contains(&pair.1) && !unseen.contains(&pair.0)  {
-            println!("0 {:?} was already found, merge {:?} with it at distance {}", pair.1, pair.0, distance);
+            //println!("0 {:?} was already found, merge {:?} with it at distance {}", pair.1, pair.0, distance);
             for group in &mut seen_groups {
                 if group.contains(&pair.0) {
                     group.insert(pair.1);
@@ -199,22 +196,19 @@ pub fn part_two(input: &str) -> Option<i64> {
                 let other_group = seen_groups.get(group2).unwrap().clone();
                 seen_groups.get_mut(group1).unwrap().extend(other_group);
                 
-                println!("{:?} and {:?} were already found, merge group {} with {} with it at distance {}", 
-                    pair.0, pair.1, group1, group2, distance);
+                //println!("{:?} and {:?} were already found, merge group {} with {} with it at distance {}", 
+                //    pair.0, pair.1, group1, group2, distance);
                 seen_groups.remove(group2);
                 connections_made += 1;
             } else{
-                println!("{:?} and {:?} were in the same group: {}-{} with distance {}", 
-                    pair.0, pair.1, group1, group2, distance);
+                //println!("{:?} and {:?} were in the same group: {}-{} with distance {}", 
+                //   pair.0, pair.1, group1, group2, distance);
                 // we already saw this one
                 connections_made += 1;
             }
         }else {
             panic!("unaccounted pair {} {}", pair.0, pair.1);
         }
-    }
-    for group in &seen_groups {
-        println!("group len is {}", group.len())
     }
     Some(points[pair.0].x * points[pair.1].x)
 }
