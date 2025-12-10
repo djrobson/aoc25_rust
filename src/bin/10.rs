@@ -1,5 +1,5 @@
 advent_of_code::solution!(10);
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 fn parse_input(input: &str) -> (Vec<u16>, Vec<u16>, Vec<Vec<u16>>, Vec<Vec<u16>>) {
     let mut lights: Vec<u16> = Vec::new();
@@ -49,20 +49,6 @@ fn parse_input(input: &str) -> (Vec<u16>, Vec<u16>, Vec<Vec<u16>>, Vec<Vec<u16>>
     (lights, masks, buttons, joltage)
 }
 
-fn _find_min_pushes_memo(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>, cur_lights: u16, cur_depth: u16, seen_before: &mut HashSet<u16>) -> Option<u16> {
-    if seen_before.contains(&cur_lights) {
-        return None;
-    }
-    if cur_lights == goal_lights {
-        return Some(cur_depth);
-    }
-    seen_before.insert(cur_lights);
-
-    let shortest = mach_buttons.iter().flat_map( |button| _find_min_pushes_memo(goal_lights, mask, mach_buttons, (cur_lights ^ button) & mask, cur_depth + 1, seen_before) ).min();
-    
-    shortest
-}
-
 fn find_min_pushes(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>) -> u32  {
 
     (0..u16::pow(2,mach_buttons.len() as u32)).flat_map(|button_combo|{
@@ -80,6 +66,48 @@ fn find_min_pushes(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>) -> u32 
     }).min().unwrap()
 }
 
+fn find_min_joltage_pushes_memo(goal_joltage: &Vec<u16>, mach_buttons: &Vec<u16>, cur_joltage: Vec<u16>, cur_depth: u16, seen_before: &mut HashMap<Vec<u16>, u16>) -> Option<u16> {
+
+    // jump out if we've been here in fewer steps already
+    if seen_before.contains_key(&cur_joltage) {
+        let prev_best = seen_before.get(&cur_joltage).unwrap();
+        if *prev_best < cur_depth {
+            return None;
+        }
+    }
+
+    // we found a match
+    if cur_joltage.eq(goal_joltage) {
+        return Some(cur_depth);
+    }
+
+    // remember that we've been here before
+    seen_before.insert(cur_joltage.clone(), cur_depth);
+
+    if seen_before.len() %100 == 0 {
+        println!("we've seen {} states", seen_before.len());
+    }
+
+    // at any step we can hit 1 button
+    let shortest = mach_buttons.iter().flat_map( |button| {
+
+        let mut new_joltage = cur_joltage.clone();
+        // update all joltages based on the chosen button
+        for battery in 0..new_joltage.len() {
+            if button & (1<<battery) != 0 {
+                new_joltage[battery] += 1;
+                // if we grew too much, then quit
+                if new_joltage[battery] > goal_joltage[battery] {
+                    return None;
+                }
+            }
+        }
+        find_min_joltage_pushes_memo(goal_joltage, mach_buttons, new_joltage, cur_depth + 1, seen_before)
+    }).min();
+    
+    shortest
+}
+
 pub fn part_one(input: &str) -> Option<u64> {
     let (lights, masks, buttons, _joltages) = parse_input(input);
     //println!("{:?} {} {:?} {:?}", lights, mask, buttons, joltages);
@@ -93,14 +121,27 @@ pub fn part_one(input: &str) -> Option<u64> {
         //let mut seen_before: HashSet<u16> = HashSet::new();
         //let min_pushes = find_min_pushes(*mach_lights, mach_mask, &mach_buttons, 0, 0, &mut seen_before);
         let min_pushes = find_min_pushes(*mach_lights, mach_mask, &mach_buttons);
-        println!("{}: {}&{} - {:?} = {:?}", machine, mach_lights, mach_mask, mach_buttons, min_pushes);
+        //println!("{}: {}&{} - {:?} = {:?}", machine, mach_lights, mach_mask, mach_buttons, min_pushes);
         total_button_pushes += min_pushes as u64;
     }
     Some(total_button_pushes)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    None
+    let (_lights, _masks, buttons, joltages) = parse_input(input);
+    println!("{:?} {:?}", buttons, joltages);
+    let total_machines = joltages.len();
+    let mut total_button_pushes = 0;
+    for machine in 0..total_machines {
+        let mach_joltages = &joltages[machine];
+        let mach_buttons = &buttons[machine];
+
+        let mut seen_before: HashMap<Vec<u16>,u16> = HashMap::new();
+        let min_pushes = find_min_joltage_pushes_memo(mach_joltages, &mach_buttons, vec![0;mach_joltages.len()], 0, &mut seen_before);
+        println!("{}: {:?} - {:?} = {:?}", machine, mach_joltages, mach_buttons, min_pushes);
+        total_button_pushes += min_pushes.unwrap() as u64;
+    }
+    Some(total_button_pushes)
 }
 
 #[cfg(test)]
@@ -116,6 +157,12 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(33));
+    }
+
+    #[test]
+    fn test_part_two_small() {
+        let result = part_two("[.##......] (0,1,3,4,6,7,8) (1,2,3,5,6,8) (0,1) (3,5,6,7) (2,5,7) (1,2,3,4,5,7,8) (7) (0,1,3) (0,3,7) (1,4,6) {36,63,29,56,28,48,43,52,23}");
+        assert_eq!(result, Some(60));
     }
 }
