@@ -1,4 +1,3 @@
-use std::u64;
 use itertools::{self, Itertools};
 
 advent_of_code::solution!(9);
@@ -28,7 +27,6 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<i64> {
-    let mut biggest_area = 0;
     let corners = parse_input(input);
     let lines = corners.iter().circular_tuple_windows().take(corners.len()).collect::<Vec<(&(i64,i64),&(i64,i64))>>();
     let mut max_boxes = corners.iter().tuple_combinations().map(|(a,b)| {
@@ -36,7 +34,7 @@ pub fn part_two(input: &str) -> Option<i64> {
         (a,b,area)
     }).sorted_by_key(|b| b.2).rev();
 
-    let max_box = max_boxes.find(|(a,b,area)| {
+    let max_box = max_boxes.find(|(a,b,_area)| {
         lines.iter().all(|(start,end)| {
             let left_of_rec = a.0.max(b.0) <= start.0.min(end.0);
             let right_of_rec = a.0.min(b.0) >= start.0.max(end.0);
