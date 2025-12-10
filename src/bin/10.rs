@@ -1,5 +1,6 @@
 advent_of_code::solution!(10);
 use std::collections::HashMap;
+use std::hash::{DefaultHasher, Hash, Hasher};
 
 fn parse_input(input: &str) -> (Vec<u16>, Vec<u16>, Vec<Vec<u16>>, Vec<Vec<u16>>) {
     let mut lights: Vec<u16> = Vec::new();
@@ -66,29 +67,44 @@ fn find_min_pushes(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>) -> u32 
     }).min().unwrap()
 }
 
-fn find_min_joltage_pushes_memo(goal_joltage: &Vec<u16>, mach_buttons: &Vec<u16>, cur_joltage: Vec<u16>, cur_depth: u16, seen_before: &mut HashMap<Vec<u16>, u16>) -> Option<u16> {
+fn calculate_hash<T: Hash>(t: &T) -> u64 {
+    let mut s = DefaultHasher::new();
+    t.hash(&mut s);
+    s.finish()
+}
+
+fn find_min_joltage_pushes_memo(goal_joltage: &Vec<u16>, mach_buttons: &Vec<u16>, cur_joltage: Vec<u16>, cur_depth: u16, seen_before: &mut HashMap<u64, u16>, cur_shortest_seen: u16) -> Option<u16> {
 
     // jump out if we've been here in fewer steps already
-    if seen_before.contains_key(&cur_joltage) {
-        let prev_best = seen_before.get(&cur_joltage).unwrap();
-        if *prev_best < cur_depth {
+    if seen_before.contains_key(&calculate_hash(&cur_joltage)) {
+        let prev_best = seen_before.get(&calculate_hash(&cur_joltage)).unwrap();
+        if *prev_best <= cur_depth {
+            //println!("got to the same place at a depth worse or equal to prev best");
             return None;
         }
     }
 
     // we found a match
     if cur_joltage.eq(goal_joltage) {
+        println!("found something at depth {}", cur_depth);
         return Some(cur_depth);
     }
 
-    // remember that we've been here before
-    seen_before.insert(cur_joltage.clone(), cur_depth);
+    if cur_depth == cur_shortest_seen {
+        // we're about to be too long, stop now
+        println!("my depth about to be worse than prev best");
+        return None;
+    }
 
-    if seen_before.len() %100 == 0 {
+    // remember that we've been here before
+    seen_before.insert(calculate_hash(&cur_joltage), cur_depth);
+
+    if seen_before.len() % 10000 == 0 {
         println!("we've seen {} states", seen_before.len());
     }
 
     // at any step we can hit 1 button
+    let mut my_shortest_seen = cur_shortest_seen;
     let shortest = mach_buttons.iter().flat_map( |button| {
 
         let mut new_joltage = cur_joltage.clone();
@@ -98,11 +114,21 @@ fn find_min_joltage_pushes_memo(goal_joltage: &Vec<u16>, mach_buttons: &Vec<u16>
                 new_joltage[battery] += 1;
                 // if we grew too much, then quit
                 if new_joltage[battery] > goal_joltage[battery] {
+                    //println!("we grew too big");
                     return None;
                 }
             }
         }
-        find_min_joltage_pushes_memo(goal_joltage, mach_buttons, new_joltage, cur_depth + 1, seen_before)
+        let result = find_min_joltage_pushes_memo(goal_joltage, mach_buttons, new_joltage, cur_depth + 1, seen_before, my_shortest_seen);
+        if let Some(found) = result {
+            if found < my_shortest_seen {
+                // skip anything worse than our current best
+                println!("found new best: {}", found);
+                my_shortest_seen = found;
+            }
+        }
+
+        result
     }).min();
     
     shortest
@@ -129,15 +155,16 @@ pub fn part_one(input: &str) -> Option<u64> {
 
 pub fn part_two(input: &str) -> Option<u64> {
     let (_lights, _masks, buttons, joltages) = parse_input(input);
-    println!("{:?} {:?}", buttons, joltages);
+    //println!("{:?} {:?}", buttons, joltages);
     let total_machines = joltages.len();
     let mut total_button_pushes = 0;
     for machine in 0..total_machines {
         let mach_joltages = &joltages[machine];
         let mach_buttons = &buttons[machine];
 
-        let mut seen_before: HashMap<Vec<u16>,u16> = HashMap::new();
-        let min_pushes = find_min_joltage_pushes_memo(mach_joltages, &mach_buttons, vec![0;mach_joltages.len()], 0, &mut seen_before);
+        let mut seen_before: HashMap<u64,u16> = HashMap::new();
+        let max_pushes = mach_joltages.iter().sum::<u16>() +1;
+        let min_pushes = find_min_joltage_pushes_memo(mach_joltages, &mach_buttons, vec![0;mach_joltages.len()], 0, &mut seen_before, max_pushes);
         println!("{}: {:?} - {:?} = {:?}", machine, mach_joltages, mach_buttons, min_pushes);
         total_button_pushes += min_pushes.unwrap() as u64;
     }
