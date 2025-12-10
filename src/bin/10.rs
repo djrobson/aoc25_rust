@@ -8,7 +8,7 @@ fn parse_input(input: &str) -> (Vec<u16>, Vec<u16>, Vec<Vec<u16>>, Vec<Vec<u16>>
     let mut masks: Vec<u16> = Vec::new();
 
     for line in input.lines() {
-        let mut splits: Vec<&str> = line.split(" ").collect();
+        let splits: Vec<&str> = line.split(" ").collect();
         let my_light_as_string: String = splits[0].as_bytes().iter().flat_map(|b| {
             match b {
                 b'.' => Some('0'),
@@ -49,7 +49,7 @@ fn parse_input(input: &str) -> (Vec<u16>, Vec<u16>, Vec<Vec<u16>>, Vec<Vec<u16>>
     (lights, masks, buttons, joltage)
 }
 
-fn find_min_pushes(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>, cur_lights: u16, cur_depth: u16, seen_before: &mut HashSet<u16>) -> Option<u16> {
+fn _find_min_pushes_memo(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>, cur_lights: u16, cur_depth: u16, seen_before: &mut HashSet<u16>) -> Option<u16> {
     if seen_before.contains(&cur_lights) {
         return None;
     }
@@ -58,9 +58,26 @@ fn find_min_pushes(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>, cur_lig
     }
     seen_before.insert(cur_lights);
 
-    let shortest = mach_buttons.iter().flat_map( |button| find_min_pushes(goal_lights, mask, mach_buttons, (cur_lights ^ button) & mask, cur_depth + 1, seen_before) ).min();
+    let shortest = mach_buttons.iter().flat_map( |button| _find_min_pushes_memo(goal_lights, mask, mach_buttons, (cur_lights ^ button) & mask, cur_depth + 1, seen_before) ).min();
     
     shortest
+}
+
+fn find_min_pushes(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>) -> u32  {
+
+    (0..u16::pow(2,mach_buttons.len() as u32)).flat_map(|button_combo|{
+        let mut result = 0;
+        for button in 0..mach_buttons.len() {
+            if button_combo & (1<<button) != 0 {
+                result = (result ^ mach_buttons[button]) & mask;
+            }
+        }
+        if goal_lights == result {
+            Some(button_combo.count_ones())
+         } else {
+            None
+         }
+    }).min().unwrap()
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
@@ -73,10 +90,11 @@ pub fn part_one(input: &str) -> Option<u64> {
         let mach_mask = masks[machine];
         let mach_buttons = &buttons[machine];
 
-        let mut seen_before: HashSet<u16> = HashSet::new();
-        let min_pushes = find_min_pushes(*mach_lights, mach_mask, &mach_buttons, 0, 0, &mut seen_before);
+        //let mut seen_before: HashSet<u16> = HashSet::new();
+        //let min_pushes = find_min_pushes(*mach_lights, mach_mask, &mach_buttons, 0, 0, &mut seen_before);
+        let min_pushes = find_min_pushes(*mach_lights, mach_mask, &mach_buttons);
         println!("{}: {}&{} - {:?} = {:?}", machine, mach_lights, mach_mask, mach_buttons, min_pushes);
-        total_button_pushes += min_pushes.unwrap() as u64;
+        total_button_pushes += min_pushes as u64;
     }
     Some(total_button_pushes)
 }
