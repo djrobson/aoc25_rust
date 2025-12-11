@@ -11,6 +11,10 @@ jobs:
         name: Continuous Integration
         steps:
             - uses: actions/checkout@v4
+            - name: Install APT packages
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y coinor-cbc coinor-libcbc-dev build-essential
             - name: Set up cargo cache
               uses: actions/cache@v4
               continue-on-error: false
