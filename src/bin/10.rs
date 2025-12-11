@@ -1,4 +1,6 @@
 advent_of_code::solution!(10);
+
+#[cfg(target_os = "linux")]
 use good_lp::{Expression, Solution, SolverModel, constraint, default_solver, variables, variable};
 
 fn parse_input(input: &str) -> (Vec<u16>, Vec<u16>, Vec<Vec<u16>>, Vec<Vec<u16>>) {
@@ -77,6 +79,7 @@ fn find_min_pushes(goal_lights: u16, mask: u16, mach_buttons: &Vec<u16>) -> u32 
         .unwrap()
 }
 
+#[cfg(target_os = "linux")]
 fn find_min_joltage_pushes(goal_joltage: &Vec<u16>, mach_buttons: &Vec<u16>) -> Option<u16> {
     let num_buttons = mach_buttons.len();
     let num_counters = goal_joltage.len();
@@ -112,6 +115,7 @@ fn find_min_joltage_pushes(goal_joltage: &Vec<u16>, mach_buttons: &Vec<u16>) -> 
         model = model.with(constraint!(constraint_expr == target));
     }
 
+
     match model.solve() {
         Ok(solution) => {
             let total_presses: i32 = button_variables.iter()
@@ -121,6 +125,11 @@ fn find_min_joltage_pushes(goal_joltage: &Vec<u16>, mach_buttons: &Vec<u16>) -> 
         }
         Err(_) => None
     }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn find_min_joltage_pushes(_goal_joltage: &Vec<u16>, _mach_buttons: &Vec<u16>) -> Option<u16> {
+    None
 }
 
 pub fn part_one(input: &str) -> Option<u64> {
