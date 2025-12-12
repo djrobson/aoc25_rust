@@ -8,17 +8,8 @@ fn parse_input(input: &str) -> GraphMap::<&str, (), Directed> {
 
     for line in input.lines() {
         if let Some((first, rest_str)) = line.split_once(':') {
-            let first = first.trim();
-            let others: Vec<&str> = rest_str.split_whitespace().collect();
-            if !graph.contains_node(first) {
-                graph.add_node(first);
-            }
-            for other in others {
-                if !graph.contains_node(other) {
-                    graph.add_node(other);
-                }
-                graph.add_edge(first, other, ());
-                // println!("adding link from {} to {}", first, other);
+            for other in rest_str.split_whitespace() {
+                graph.add_edge(first.trim(), other, ());
             }
         }
     }
