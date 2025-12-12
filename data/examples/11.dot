@@ -1,0 +1,27 @@
+digraph G {
+    rankdir=LR;
+    node [shape=circle, style=filled, fillcolor=lightblue];
+
+    // Special nodes
+    you [fillcolor=lightgreen, style=filled];
+    out [fillcolor=lightcoral, style=filled];
+
+    // Edges
+    aaa -> you;
+    aaa -> hhh;
+    you -> bbb;
+    you -> ccc;
+    bbb -> ddd;
+    bbb -> eee;
+    ccc -> ddd;
+    ccc -> eee;
+    ccc -> fff;
+    ddd -> ggg;
+    eee -> out;
+    fff -> out;
+    ggg -> out;
+    hhh -> ccc;
+    hhh -> fff;
+    hhh -> iii;
+    iii -> out;
+}
